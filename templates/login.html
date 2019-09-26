@@ -2,16 +2,26 @@
 
 {% block body %}
 
-Log in page.
 
-<br><br>
+<div class="col-lg-12">
+	<div id="login" class="mx-auto">
+		<form method="post" action="login">
+			<table>
+				<tbody>
+					<tr>
+						<td><input class="form-control" type="text" name="email" placeholder="Email"></td>
+					</tr>
+					<tr>
+						<td><input class="form-control" type="password" name="password" placeholder="Password"></td>
+					</tr>
+					<tr>
+						<td><input id="loginButton" class="btn" type="submit" value="Log In"></td>
+					</tr>
+				</tbody>
+			</table>
+		</form>
+	</div>
+</div>
 
-<form method="post" action="login">
-	Email: <input type="text" name="email">
-	<br>
-	Password: <input type="password" name="password">
-	<br>
-	<input type="submit" value="Log In">
-</form>
 
 {% endblock %}
