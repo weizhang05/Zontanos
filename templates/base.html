@@ -8,11 +8,126 @@
 		<!-- Bootstrap CSS -->
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
+		<link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
+		
 		<title>NUS CS3235 Computer Security</title>
+		
+		<style>
+			<!--
+			DO NOT DELETE THIS BLOCK OF COMMENT
+			Base: #003D63
+			Hover: #002866 (Darker) / #008CE3 (Lighter)
+			Accent: #FFFFFF
+			-->
+			#main
+			{
+				font-family: 'Open Sans', sans-serif;			
+			}
+			
+			#nav a
+			{
+				text-decoration: none;
+				color: black;
+				margin-right: 50px;
+				font-weight: bold;
+			}
+			
+			#body
+			{
+				height: 800px;
+				background-color: #003D63;
+				color: #FFFFFF;
+				padding-top: 50px;
+				padding-left: 50px;
+			}
+			
+			#landing
+			{
+				margin-top: 150px;
+				margin-left: 200px;
+				
+			}
+			
+			#landingTitle
+			{
+				font-weight: bold;
+			}
+			
+			#description
+			{
+				margin-top: 30px;
+				width: 400px;
+			}
+			
+			#login
+			{
+				margin-top: 150px;
+				width: 400px;
+			}
+			
+			#login td
+			{
+				padding-bottom: 20px;
+				padding-right: 30px;
+			}
+			
+			#login input
+			{
+				width: 100%;
+				width: 400px;
+			}
+			
+			#loginButton
+			{
+				background-color: #003D63;
+				color: #FFFFFF;
+				border: 1px solid #FFFFFF;
+				transition-duration: 0.4s;
+				font-weight: bold;
+			}
+			
+			#loginButton:hover
+			{
+				background-color: #1F4B66;
+			}
+			
+			#footer
+			{
+				padding: 10px 0;
+				font-size: 12px;
+				color: #002866;
+			}
+		</style>
 	</head>
 
 	<body>
-		{% block body %}{% endblock %}
+		<div id="main" class="container-fluid">
+			<div id="nav" class="row">
+				<div class="col-lg-12">
+					<ul class="nav">
+					  <li class="nav-item">
+						<a class="nav-link" href="/">Home</a>
+					  </li>
+					  <li class="nav-item">
+						<a class="nav-link" href="register">Register</a>
+					  </li>
+					  <li class="nav-item">
+						<a class="nav-link" href="login">Login</a>
+					  </li>
+					</ul>
+				</div>
+			</div>
+			
+			<div id="body" class="row">
+			{% block body %}{% endblock %}
+			</div>
+			
+			<div id="footer" class="row">
+				<div class="col-lg-12 text-center">
+					A project under CS3235 Computer Security by students of NUS.
+				</div>
+			</div>
+		</div>
 		
 		<!-- Optional JavaScript -->
 		<!-- jQuery first, then Popper.js, then Bootstrap JS -->
