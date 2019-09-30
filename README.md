@@ -12,10 +12,10 @@ A facial recognition project using the state of the art technology with liveness
 
 ### Setting up
 
-Install Flask
+Install Flask, face_recognition, opencv-python, CMake, keras
 
 ```
-pip install Flask
+pip install Flask/face_recognition/opencv-python/CMake/keras
 ```
 
 <br/>
