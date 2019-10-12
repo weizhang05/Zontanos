@@ -1,5 +1,4 @@
-from flask import Flask, render_template, session, redirect, url_for, escape, request
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, session, redirect, url_for, escape, request, Response
 from camera import VideoCamera
 app = Flask(__name__)
 
@@ -25,6 +24,7 @@ def register():
         return redirect(url_for('index'))
     
     return render_template('register.html')
+
 def gen(camera):
     while True:
         frame = camera.get_frame()
