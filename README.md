@@ -15,7 +15,7 @@ A facial recognition project using the state of the art technology with liveness
 Install Flask, face_recognition, opencv-python, CMake, keras
 
 ```
-pip install Flask/face_recognition/opencv-python/CMake/keras
+pip install Flask face_recognition opencv-python CMake keras
 ```
 
 <br/>
