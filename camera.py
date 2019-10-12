@@ -53,7 +53,6 @@ class VideoCamera(object):
 
 		process_this_frame = not process_this_frame
 
-
 		# Display the results
 		for (top, right, bottom, left), name in zip(face_locations, face_names):
 			# Scale back up face locations since the frame we detected in was scaled to 1/4 size
