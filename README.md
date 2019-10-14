@@ -18,20 +18,28 @@ Install Flask, face_recognition, opencv-python, CMake, keras
 pip install Flask face_recognition opencv-python CMake keras
 ```
 
+Install Flask SQLAlchemy
+```
+pip install flask-sqlalchemy flask-login
+```
+
 <br/>
 
 Set environmental variables
 
+Rename project as `Zontanos`
+
 *Windows*
 
 ```
-set FLASK_APP=app.py
+set FLASK_APP=Zontanos
 ```
 
 *Linux*
 
 ```
-export FLASK_APP=app.py
+export FLASK_APP=Zontanos
+export FLASK_DEBUG=1
 ```
 
 <br/>
@@ -42,7 +50,7 @@ export FLASK_APP=app.py
 flask run
 ```
 
-Note: Ensure command is executed in the same directory as **app.py**
+Note: Ensure command is executed in the outside of the directory as **__init__.py**
 
 <br/>
 
