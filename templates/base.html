@@ -1,147 +1,50 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<!-- Required meta tags -->
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-		<!-- Bootstrap CSS -->
-		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Zontanós</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css" />
+</head>
 
-		<link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
-		
-		<title>NUS CS3235 Computer Security</title>
-		
-		<style>
-			<!--
-			DO NOT DELETE THIS BLOCK OF COMMENT
-			Base: #003D63
-			Hover: #002866 (Darker) / #008CE3 (Lighter)
-			Colored BG fonts: #FFFFFF
-			White BG fonts: #262626
-			-->
-			#main
-			{
-				font-family: 'Open Sans', sans-serif;			
-			}
-			
-			#nav a
-			{
-				text-decoration: none;
-				color: #262626;
-				margin-right: 50px;
-				font-weight: bold;
-				letter-spacing: 3px;
-				transition-duration: 0.4s;
-			}
-			
-			#nav a:hover
-			{
-				background-color: #003D63;
-				color: #FFFFFF;
-			}
-			
-			#body
-			{
-				height: 800px;
-				background-color: #003D63;
-				color: #FFFFFF;
-				padding-top: 50px;
-				padding-left: 50px;
-			}
-			
-			#landing
-			{
-				margin-top: 150px;
-				margin-left: 200px;
-				
-			}
-			
-			#landingTitle
-			{
-				font-weight: bold;
-			}
-			
-			#description
-			{
-				margin-top: 30px;
-				width: 400px;
-			}
-			
-			#login, #register
-			{
-				margin-top: 150px;
-				width: 400px;
-			}
-			
-			#login td, #register td
-			{
-				padding-bottom: 20px;
-				padding-right: 30px;
-			}
-			
-			#login input, #register input
-			{
-				width: 100%;
-				width: 400px;
-			}
-			
-			#loginButton, #registerButton
-			{
-				background-color: #003D63;
-				color: #FFFFFF;
-				border: 1px solid #FFFFFF;
-				transition-duration: 0.4s;
-				font-weight: bold;
-			}
-			
-			<!-->#loginButton:hover, #registerButton:hover
-			{
-				background-color: #1F4B66;
-			}-->
-			
-			#footer
-			{
-				padding: 10px 0;
-				font-size: 12px;
-				color: #002866;
-			}
-		</style>
-	</head>
+<body>
+    <section class="hero is-primary is-fullheight">
 
-	<body>
-		<div id="main" class="container-fluid">
-			<div id="nav" class="row">
-				<div class="col-lg-12">
-					<ul class="nav">
-					  <li class="nav-item">
-						<a class="nav-link" href="/">Home</a>
-					  </li>
-					  <li class="nav-item">
-						<a class="nav-link" href="register">Register</a>
-					  </li>
-					  <li class="nav-item">
-						<a class="nav-link" href="login">Login</a>
-					  </li>
-					</ul>
-				</div>
-			</div>
-			
-			<div id="body" class="row">
-			{% block body %}{% endblock %}
-			</div>
-			
-			<div id="footer" class="row">
-				<div class="col-lg-12 text-center">
-					A project under CS3235 Computer Security by students of NUS.
-				</div>
-			</div>
-		</div>
-		
-		<!-- Optional JavaScript -->
-		<!-- jQuery first, then Popper.js, then Bootstrap JS -->
-		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-	</body>
+        <div class="hero-head">
+            <nav class="navbar">
+                <div class="container">
+
+                    <div id="navbarMenuHeroA" class="navbar-menu">
+                        <div class="navbar-end">
+                            <a href="{{ url_for('main.index') }}" class="navbar-item">
+                                Home
+                            </a> {% if current_user.is_authenticated %}
+                            <a href="{{ url_for('main.profile') }}" class="navbar-item">
+                                Profile
+                            </a> {% endif %} {% if not current_user.is_authenticated %}
+                            <a href="{{ url_for('auth.login') }}" class="navbar-item">
+                                Login
+                            </a>
+                            <a href="{{ url_for('auth.signup') }}" class="navbar-item">
+                                Sign Up
+                            </a> {% endif %} {% if current_user.is_authenticated %}
+                            <a href="{{ url_for('auth.logout') }}" class="navbar-item">
+                                Logout
+                            </a> {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+
+        <div class="hero-body">
+            <div class="container has-text-centered">
+                {% block content %} {% endblock %}
+            </div>
+        </div>
+    </section>
+</body>
+
 </html>
