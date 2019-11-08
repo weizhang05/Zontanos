@@ -43,8 +43,16 @@ export FLASK_APP=Zontanos
 
 ### Starting server
 
+Local only
+
 ```
 flask run
+```
+
+Public accessible
+
+```
+flask run --host=0.0.0.0
 ```
 
 Note: Ensure command is executed in the same directory as **Zontanos** folder.
