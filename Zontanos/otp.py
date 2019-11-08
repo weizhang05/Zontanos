@@ -1,19 +1,18 @@
 import math, random 
 import smtplib
 
-# function to generate OTP 
+# Generates OTP 
 def generateOTP() : 
     # Declare a digits variable which stores all digits  
     digits = "0123456789"
     OTP = "" 
   
-   # length of password can be changed by changing value in range 
+   # Length of password can be changed by changing value in range 
     for i in range(6) : 
         OTP += digits[math.floor(random.random() * 10)] 
   
     return OTP
 
-# Driver code 
 if __name__ == "__main__" : 
     OTP = generateOTP()
     server = smtplib.SMTP('smtp.gmail.com',587)
@@ -23,7 +22,7 @@ if __name__ == "__main__" :
     sender = 'cs3235otp@gmail.com'
     password = '1q2w#E$R'
 
-    # receiver will be the login email
+    # Receiver will be the login email
     receiver = ''
 
     server.login(sender,password)
@@ -31,7 +30,7 @@ if __name__ == "__main__" :
     server.sendmail(sender,receiver,msg)
     server.close()
 
-    # User enters OTP here
+    print("Enter received OTP: ")
     enteredOTP = input()
 
     if OTP == enteredOTP:
