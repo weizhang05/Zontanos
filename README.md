@@ -12,13 +12,13 @@ A facial recognition project using the state of the art technology with liveness
 
 ### Setting up
 
-Install Flask, face_recognition, opencv-python, CMake, keras
+Install Flask, face_recognition, opencv-python, CMake, keras.
 
 ```
 pip install Flask face_recognition opencv-python CMake keras
 ```
 
-Install Flask SQLAlchemy
+Install Flask SQLAlchemy.
 ```
 pip install flask-sqlalchemy flask-login
 ```
@@ -27,19 +27,16 @@ pip install flask-sqlalchemy flask-login
 
 Set environmental variables
 
-Rename project as `Zontanos`
-
 *Windows*
 
 ```
 set FLASK_APP=Zontanos
 ```
 
-*Linux*
+*Linux*/Mac
 
 ```
 export FLASK_APP=Zontanos
-export FLASK_DEBUG=1
 ```
 
 <br/>
@@ -50,11 +47,11 @@ export FLASK_DEBUG=1
 flask run
 ```
 
-Note: Ensure command is executed in the outside of the directory as **__init__.py**
+Note: Ensure command is executed in the same directory as **Zontanos** folder.
 
 <br/>
 
-Open browser of choice (Chrome preferred) and go to **localhost:5000**
+Open browser of choice (Chrome preferred) and go to **localhost:5000** .
 
 <br/>
 
