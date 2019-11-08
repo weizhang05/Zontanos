@@ -1,20 +1,18 @@
-# import library 
 import math, random 
 import smtplib
+
 # function to generate OTP 
 def generateOTP() : 
-  
-    # Declare a digits variable   
-    # which stores all digits  
+    # Declare a digits variable which stores all digits  
     digits = "0123456789"
     OTP = "" 
   
-   # length of password can be chaged 
-   # by changing value in range 
+   # length of password can be changed by changing value in range 
     for i in range(6) : 
         OTP += digits[math.floor(random.random() * 10)] 
   
     return OTP
+
 # Driver code 
 if __name__ == "__main__" : 
     OTP = generateOTP()
@@ -37,8 +35,6 @@ if __name__ == "__main__" :
     enteredOTP = input()
 
     if OTP == enteredOTP:
-        # success login
         print("Success")
     else:
-        # fail OTP
         print("Failed")
