@@ -23,7 +23,7 @@ if __name__ == "__main__" :
     password = '1q2w#E$R'
 
     # Receiver will be the login email
-    receiver = ''
+    receiver = 'cs3235otp@gmail.com'
 
     server.login(sender,password)
     msg = "\n" + OTP
