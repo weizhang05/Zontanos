@@ -13,8 +13,15 @@ import time
 
 auth = Blueprint('auth', __name__)
 
+# hypothetical link for clearing all sessions
+@auth.route('/clear')
+def clear():
+    session.clear()
+    return redirect(url_for('auth.login'))
+
 @auth.route('/login')
 def login():
+    session.clear()
     return render_template('login.html')
 
 @auth.route('/login', methods=['POST'])
@@ -51,8 +58,10 @@ def otp():
 
         # returns to home page after 2 wrong tries
         if session['otpTrial'] == 2:
+            session.clear()
             return redirect(url_for('auth.login'))
 
+        flash('Wrong OTP, please try again.')
         return render_template('otp.html')
 
     # error tracking
