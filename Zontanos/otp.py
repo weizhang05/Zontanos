@@ -2,19 +2,20 @@ import math, random
 import smtplib
 
 # Generates OTP 
-def generateOTP() : 
+def generateOtp(): 
     # Declare a digits variable which stores all digits  
     digits = "0123456789"
-    OTP = "" 
+    otp = "" 
   
    # Length of password can be changed by changing value in range 
     for i in range(6) : 
-        OTP += digits[math.floor(random.random() * 10)] 
+        otp += digits[math.floor(random.random() * 10)] 
   
-    return OTP
+    return otp
 
-if __name__ == "__main__" : 
-    OTP = generateOTP()
+# Sent OTP to email
+def sentOtp():
+    otp = generateOtp()
     server = smtplib.SMTP('smtp.gmail.com',587)
     server.ehlo()
     server.starttls()
@@ -26,14 +27,8 @@ if __name__ == "__main__" :
     receiver = 'cs3235otp@gmail.com'
 
     server.login(sender,password)
-    msg = "\n" + OTP
+    msg = "\n" + otp
     server.sendmail(sender,receiver,msg)
     server.close()
-
-    print("Enter received OTP: ")
-    enteredOTP = input()
-
-    if OTP == enteredOTP:
-        print("Success")
-    else:
-        print("Failed")
+    
+    return otp

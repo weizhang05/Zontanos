@@ -7,6 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required
 from .models import User
 from . import db
+from .otp import sentOtp
 
 import time
 
@@ -18,11 +19,11 @@ def login():
 
 @auth.route('/login', methods=['POST'])
 def login_post():
-    email = request.form.get('email')
+    session['email'] = request.form.get('email')
     password = request.form.get('password')
-    remember = True if request.form.get('remember') else False
-
-    user = User.query.filter_by(email=email).first()
+    session['rmb'] = True if request.form.get('remember') else False
+    
+    user = User.query.filter_by(email=session['email']).first()
 
     # check if user actually exists
     # take the user supplied password, hash it, and compare it to the hashed password in database
@@ -30,10 +31,50 @@ def login_post():
         flash('Please check your login details and try again.')
         return redirect(url_for('auth.login')) # if user doesn't exist or password is wrong, reload the page
 
-    login_user(user, remember=remember)
+    # proceed to otp authentication once credentials are cleared
+    return redirect(url_for('auth.otp'), code=307)
 
-    # if the above check passes, then we know the user has the right credentials
-    return redirect(url_for('main.profile'))
+@auth.route('/otp', methods=['POST'])
+def otp():
+    if 'otpTrial' in session:
+        otp = request.form.get('otp')
+
+        # successful login for correct otp entered
+        if 'otp' in session:
+            if otp == session['otp']:
+                session.pop('otpTrial', None)
+                session.pop('otp', None)
+                session["otpCorrect"] = True
+                return redirect(url_for('auth.do_login'), code=307)
+        
+        session['otpTrial'] += 1
+
+        # returns to home page after 2 wrong tries
+        if session['otpTrial'] == 2:
+            return redirect(url_for('auth.login'))
+
+        return render_template('otp.html')
+
+    # error tracking
+    session['otpTrial'] = 0
+    session['otp'] = sentOtp()
+    
+    return render_template('otp.html')
+
+# officially logins the user once credentials and OTP is satisfied
+@auth.route('/do_login', methods=['POST'])
+def do_login():
+    # this is to ensure the user does not forge a fake login
+    if 'otpCorrect' in session:
+        user = User.query.filter_by(email=session['email']).first()
+        login_user(user, remember=session['rmb'])
+        session.pop('otpCorrect', None)
+        session.pop('email', None)
+        session.pop('rmb', None)
+        return redirect(url_for('main.profile'))
+
+    session.clear()
+    return redirect(url_for('auth.login'))
 
 @auth.route('/signup')
 def signup():
@@ -63,6 +104,7 @@ def signup_post():
 @auth.route('/logout')
 @login_required
 def logout():
+    session.clear()
     logout_user()
     return redirect(url_for('main.index'))
 
