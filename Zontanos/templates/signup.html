@@ -10,23 +10,60 @@
         <form method="POST" action="/signup">
             <div class="field">
                 <div class="control">
-                    <input class="input is-large" type="email" name="email" placeholder="Email" autofocus="">
+                    <input class="input is-large" type="email" id="email" name="email" placeholder="Email" autofocus="">
                 </div>
             </div>
 
             <div class="field">
                 <div class="control">
-                    <input class="input is-large" type="text" name="name" placeholder="Name" autofocus="">
+                    <input class="input is-large" type="text" id="name" name="name" placeholder="Name" autofocus="">
                 </div>
             </div>
 
             <div class="field">
                 <div class="control">
-                    <input class="input is-large" type="password" name="password" placeholder="Password">
+                    <input class="input is-large" type="password" id="password" name="password" placeholder="Password">
                 </div>
             </div>
-
+			<div class="field">
+				<div id ="face-input">
+                    <video id="myVideo"  autoplay></video>
+                </div>
+			</div>
             <button class="button is-block is-info is-large is-fullwidth">Sign Up</button>
+			<script>
+				let v = document.getElementById("myVideo");
+				let b = document.getElementById("button");
+				//create a canvas to grab an image for upload
+				let imageCanvas = document.createElement('canvas');
+				let imageCtx = imageCanvas.getContext("2d");
+		
+		
+
+				function sendImagefromCanvas() {
+					//Make sure the canvas is set to the current video size
+					//print("Success")
+					imageCanvas.width = v.videoWidth;
+					imageCanvas.height = v.videoHeight;
+					imageCtx.drawImage(v, 0, 0, v.videoWidth, v.videoHeight);
+					//Convert the canvas to blob and post the file
+					imageCanvas.toBlob(postFile, 'image/jpeg');
+				}
+				 window.onload = function () {
+					//Get camera video
+					navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: false })
+						.then(stream => {
+							v.srcObject = stream;
+						})
+						.catch(err => {
+							console.log('navigator.getUserMedia error: ', err)
+						});
+				};
+				b.onclick = function () {
+					console.log('click');
+					sendImagefromCanvas();
+				};
+			</script>
         </form>
     </div>
 </div>
