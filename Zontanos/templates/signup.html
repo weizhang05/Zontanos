@@ -7,7 +7,7 @@
             {{ messages[0] }}. Go to <a href="{{ url_for('auth.login') }}">login page</a>.
         </div>
         {% endif %} {% endwith %}
-        <form method="POST" action="/signup">
+        <form>
             <div class="field">
                 <div class="control">
                     <input class="input is-large" type="email" id="email" name="email" placeholder="Email" autofocus="">
@@ -25,12 +25,14 @@
                     <input class="input is-large" type="password" id="password" name="password" placeholder="Password">
                 </div>
             </div>
+		</form>
 			<div class="field">
 				<div id ="face-input">
                     <video id="myVideo"  autoplay></video>
                 </div>
 			</div>
-            <button class="button is-block is-info is-large is-fullwidth">Sign Up</button>
+            <button id="button" class="button is-block is-info is-large is-fullwidth">Sign Up</button>
+
 			<script>
 				let v = document.getElementById("myVideo");
 				let b = document.getElementById("button");
@@ -38,17 +40,44 @@
 				let imageCanvas = document.createElement('canvas');
 				let imageCtx = imageCanvas.getContext("2d");
 		
-		
+				
+				function postFile(file) {
+					// get form data
+					email = document.getElementById("email").value
+					pass = document.getElementById("password").value
+					name = document.getElementById("name").value
 
-				function sendImagefromCanvas() {
-					//Make sure the canvas is set to the current video size
-					//print("Success")
-					imageCanvas.width = v.videoWidth;
-					imageCanvas.height = v.videoHeight;
-					imageCtx.drawImage(v, 0, 0, v.videoWidth, v.videoHeight);
-					//Convert the canvas to blob and post the file
-					imageCanvas.toBlob(postFile, 'image/jpeg');
+					let formdata = new FormData();
+					formdata.append("image", file);
+					formdata.append("email", email);
+					formdata.append("pass", pass);
+					formdata.append("name", name);
+
+					let xhr = new XMLHttpRequest();
+					xhr.open('POST', 'http://localhost:5000/signup_user', true);
+					 xhr.onload = function () {
+						if (this.status === 200) {
+							var data = JSON.parse(this.responseText);
+							 if(data['registration'] == true){
+								alert('Successful Registration!');
+								window.location.href = "{{ url_for('auth.login')}}";
+							}
+						}
+					};
+
+					xhr.send(formdata);
 				}
+				function sendImagefromCanvas() {
+				//Make sure the canvas is set to the current video size
+				imageCanvas.width = v.videoWidth;
+				imageCanvas.height = v.videoHeight;
+
+				imageCtx.drawImage(v, 0, 0, v.videoWidth, v.videoHeight);
+
+				//Convert the canvas to blob and post the file
+				imageCanvas.toBlob(postFile, 'image/jpeg');
+				}	
+				
 				 window.onload = function () {
 					//Get camera video
 					navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: false })
@@ -59,12 +88,19 @@
 							console.log('navigator.getUserMedia error: ', err)
 						});
 				};
+				 //Take a picture on click
+				v.onclick = function () {
+					console.log('click');
+					sendImagefromCanvas();
+				};
+				//Take a picture on click
 				b.onclick = function () {
 					console.log('click');
 					sendImagefromCanvas();
 				};
+
 			</script>
-        </form>
+ 
     </div>
 </div>
 {% endblock %}
