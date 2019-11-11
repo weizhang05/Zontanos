@@ -8,8 +8,12 @@ from flask_login import login_user, logout_user, login_required
 from .models import User
 from . import db
 from .otp import sentOtp
-
 import time
+import flask
+from flask import request, url_for, Response
+from flask import flash, redirect, render_template, request, session, abort
+import io
+from PIL import Image
 
 auth = Blueprint('auth', __name__)
 
@@ -89,26 +93,67 @@ def do_login():
 def signup():
     return render_template('signup.html')
 
-@auth.route('/signup', methods=['POST'])
-def signup_post():
-    email = request.form.get('email')
-    name = request.form.get('name')
-    password = request.form.get('password')
+@auth.route('/signup_user', methods=['POST'])
+def signup_user():
+	known_face_encoding = [-0.0503066,0.10304856,0.00204806,-0.00389499,-0.03759966,
+							-0.09018462,-0.04985043,-0.11552332,0.10075147,-0.05842667,
+							0.2121045,-0.08577333,-0.213588,-0.14619818,-0.03819468,
+							0.20927802,-0.19131684,-0.10849015,-0.0833607,-0.00487367,
+							0.10962869,0.01902105,0.02119232,0.03458961,-0.0676399,
+							-0.32420766,-0.06685217,-0.1253757,-0.06563466,-0.01856556,
+							-0.02201398,0.04079891,-0.1656629,-0.08953712,0.0432549,
+							0.0409674,-0.0715493,-0.07134749,0.20112692,-0.06966566,
+							-0.20266852,-0.03234909,0.10976552,0.22679658,0.19811808,
+							0.02655001,0.01308998,-0.11290134,0.11300361,-0.15953682,
+							0.02025095,0.14173162,0.09588584,0.10748261,0.05977803,
+							-0.07566036,0.06960371,0.09213795,-0.14075439,-0.03364062,
+							0.0960448,-0.0871863,-0.04299871,-0.08072766,0.25391167,
+							0.03685982,-0.11414248,-0.14813563,0.10489471,-0.14378215,
+							-0.1229203,0.0293023,-0.13665946,-0.19299881,-0.32483345,
+							-0.02783794,0.31240979,0.09899636,-0.20655565,0.06804011,
+							-0.01659909,-0.02284967,0.17932656,0.14099914,0.03632857,
+							0.03354897,-0.10749609,0.00128054,0.2078674,-0.11774533,
+							-0.03962221,0.20906711,-0.02309964,0.02911466,0.02462435,
+							-0.01325976,-0.02004067,0.07890908,-0.13797773,0.0380192,
+							0.10960671,-0.00563727,-0.02076689,0.05862342,-0.06813609,
+							0.06174087,0.01770549,0.08924914,0.01272873,-0.07172906,
+							-0.1612789,-0.06534074,0.12753838,-0.16569392,0.22722113,0.09166601,
+							0.00968798,0.07846366,0.11118621,0.09732923,-0.02296288,
+							-0.06158877,-0.2623125,-0.0223248,0.14919193,0.03540958,0.10420216,0.00212763]
 
-    user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
+	if flask.request.method == "POST":
+		email = request.form.get('email')
+		name = request.form.get('name')
+		password = request.form.get('password')
+		user_status = {'registration': False, 'face_present': False, 'duplicate':False}
+		
+		user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
 
-    if user: # if a user is found, we want to redirect back to signup page so user can try again
-        flash('Email address already exists')
-        return redirect(url_for('auth.signup'))
+		if user: # if a user is found, we want to redirect back to signup page so user can try again
+			flash('Email address already exists')
+			user_status['duplicate'] = True
+			#return redirect(url_for('auth.signup'))
+		else:
+			if flask.request.files.get("image"):
+				# read the image in PIL format
+				image = flask.request.files["image"].read()
+				image = np.array(Image.open(io.BytesIO(image)))
+				#print(face_recognition.face_encodings(image))
+				print(face_recognition.compare_faces(face_recognition.face_encodings(image)[0], [known_face_encoding], tolerance=0.5))
+				user_status['face_present'] = True
+			else:
+				user_status['face_present'] = False
+			# create new user with the form data. Hash the password so plaintext version isn't saved.
+			new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'))
 
-    # create new user with the form data. Hash the password so plaintext version isn't saved.
-    new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'))
-
-    # add the new user to the database
-    db.session.add(new_user)
-    db.session.commit()
-
-    return redirect(url_for('auth.login'))
+			# add the new user to the database
+			db.session.add(new_user)
+			db.session.commit()
+			user_status['registration'] = True
+			flash('Successful Registration')
+		
+    #return redirect(url_for('auth.login'))
+	return flask.jsonify(user_status)
 
 @auth.route('/logout')
 @login_required
