@@ -23,7 +23,9 @@ Install Flask SQLAlchemy.
 pip install flask-sqlalchemy flask-login
 ```
 
-<br/>
+Note: If **face_recognition** fails to install, run **pip install cmake** and try again. (Also if you are on Windows and received a compilation error, install **Visual Studio for C++ development**)
+
+
 
 Set environmental variables
 
