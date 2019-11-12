@@ -28,8 +28,8 @@ def login():
     session.clear()
     return render_template('login.html')
 
-@auth.route('/login', methods=['POST'])
-def login_post():
+@auth.route('/login_user', methods=['POST'])
+def login_user():
     session['email'] = request.form.get('email')
     password = request.form.get('password')
     session['rmb'] = True if request.form.get('remember') else False
