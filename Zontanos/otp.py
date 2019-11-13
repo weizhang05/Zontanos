@@ -14,7 +14,7 @@ def generateOtp():
     return otp
 
 # Sent OTP to email
-def sentOtp():
+def sentOtp(receiverEmail):
     otp = generateOtp()
     server = smtplib.SMTP('smtp.gmail.com',587)
     server.ehlo()
@@ -24,11 +24,11 @@ def sentOtp():
     password = '1q2w#E$R'
 
     # Receiver will be the login email
-    receiver = 'cs3235otp@gmail.com'
+    #receiver = 'cs3235otp@gmail.com'
 
     server.login(sender,password)
     msg = "\n" + otp
-    server.sendmail(sender,receiver,msg)
+    server.sendmail(sender,receiverEmail,msg)
     server.close()
     
     return otp

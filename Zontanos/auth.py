@@ -29,12 +29,14 @@ def login():
     session.clear()
     return render_template('login.html')
 
+
 @auth.route('/login', methods=['POST'])
 def login_post():
 	session['email'] = request.form.get('email')
 	session['faceRec'] = False
 	password = request.form.get('password')
 	session['rmb'] = True if request.form.get('remember') else False
+
     
 	user = User.query.filter_by(email=session['email']).first()
 
@@ -72,7 +74,8 @@ def otp():
 
     # error tracking
     session['otpTrial'] = 0
-    session['otp'] = sentOtp()
+    user = User.query.filter_by(email=session['email']).first()
+    session['otp'] = sentOtp(user.email)
     
     return render_template('otp.html')
 @auth.route('/facialrecognition', methods=['GET','POST'])
@@ -130,9 +133,10 @@ def signup_post():
 
 	if flask.request.method == "POST":
 		email = request.form.get('email')
-		name = str(request.form['name'])
-		password = str(request.form['pass'])
-		print(password)
+		name = request.form.get('name')
+		password = request.form.get('password')
+		image = request.form.get('image')
+
 		user_status = {'registration': False, 'face_present': False, 'duplicate':False}
 		user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
 		if user: # if a user is found, we want to redirect back to signup page so user can try again
@@ -150,10 +154,12 @@ def signup_post():
 			else:
 				user_status['face_present'] = False
 			# create new user with the form data. Hash the password so plaintext version isn't saved.
+
 			new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'), facereco=str(re.sub("\s+", ",", str(facerecoVal[0]))))
 			#Line 123~124 is how we store and compare data
 			#npA = np.asarray(list(map(float, str(re.sub("\s+", ",", str(facerecoVal[0])))[1:-1].split(","))), dtype=np.float32)
 			#print(face_recognition.compare_faces([npA], face_recognition.face_encodings(image)[0], tolerance=0.5))
+
 			# add the new user to the database
 			db.session.add(new_user)
 			db.session.commit()

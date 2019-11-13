@@ -15,13 +15,15 @@ A facial recognition project using the state of the art technology with liveness
 Install Flask, face_recognition, opencv-python, CMake, keras.
 
 ```
-pip install Flask face_recognition opencv-python CMake keras
+pip install Flask CMake face_recognition opencv-python keras
 ```
 
 Install Flask SQLAlchemy.
 ```
 pip install flask-sqlalchemy flask-login
 ```
+
+Note: If you are on Windows and received a compilation error, install **Visual Studio for C++ development**.
 
 <br/>
 
