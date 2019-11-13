@@ -70,7 +70,8 @@ def otp():
 
     # error tracking
     session['otpTrial'] = 0
-    session['otp'] = sentOtp()
+    user = User.query.filter_by(email=session['email']).first()
+    session['otp'] = sentOtp(user.email)
     
     return render_template('otp.html')
 
@@ -125,6 +126,7 @@ def signup_user():
 		email = request.form.get('email')
 		name = request.form.get('name')
 		password = request.form.get('password')
+		image = request.form.get('image')
 		user_status = {'registration': False, 'face_present': False, 'duplicate':False}
 		
 		user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
@@ -144,7 +146,7 @@ def signup_user():
 			else:
 				user_status['face_present'] = False
 			# create new user with the form data. Hash the password so plaintext version isn't saved.
-			new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'))
+			new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'), image=image)
 
 			# add the new user to the database
 			db.session.add(new_user)
