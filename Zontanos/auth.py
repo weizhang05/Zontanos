@@ -91,7 +91,6 @@ def do_facialrecognition():
 			npA = np.asarray(list(map(float, str(re.sub("\s+", ",", str(user.facereco)))[1:-1].split(","))), dtype=np.float32)
 			if not face_recognition.compare_faces([facerecoVal], npA, tolerance=0.9):
 				flash('Face not recognized')
-				print('Fake')
 				user_status['face_recog'] = False
 			else:
 				user_status['face_recog'] = True
@@ -110,7 +109,7 @@ def do_login():
 		session.pop('otpCorrect', None)
 		session.pop('email', None)
 		session.pop('rmb', None)
-		return url_for('main.profile')
+		return redirect(url_for('main.profile'))
 	session.clear()
 	return redirect(url_for('auth.login'))
 
