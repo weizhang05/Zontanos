@@ -5,7 +5,7 @@ A facial recognition project using the state of the art technology with liveness
 
 ### Requirements
 
-* Python 3
+* Python 3.7.x
 * Flask
 
 <br/>
