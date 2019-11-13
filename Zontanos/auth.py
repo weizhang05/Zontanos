@@ -96,7 +96,6 @@ def do_facialrecognition():
 			else:
 				user_status['face_recog'] = True
 				session['faceRec'] = True
-				print("True")
 				return redirect(url_for('auth.do_login'), code=307)
 				
 	return flask.jsonify(user_status)	
@@ -111,9 +110,7 @@ def do_login():
 		session.pop('otpCorrect', None)
 		session.pop('email', None)
 		session.pop('rmb', None)
-		print("Success")
-		return redirect(url_for('main.profile'))
-
+		return url_for('main.profile')
 	session.clear()
 	return redirect(url_for('auth.login'))
 
