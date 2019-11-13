@@ -32,8 +32,11 @@
 					formdata.append("image", file);
 					let xhr = new XMLHttpRequest();
 					xhr.open('POST', 'http://localhost:5000/do_facialrecognition', true);
-
-					xhr.timeout = 2000;
+					xhr.onload = function () {
+						if (this.status === 200) {
+							xhr.abort();
+						}
+					};
 					xhr.send(formdata);
 				}
 				function sendImagefromCanvas() {

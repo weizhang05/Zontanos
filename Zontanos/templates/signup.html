@@ -39,6 +39,7 @@
 				//create a canvas to grab an image for upload
 				let imageCanvas = document.createElement('canvas');
 				let imageCtx = imageCanvas.getContext("2d");
+		
 				
 				function postFile(file) {
 					// get form data
@@ -49,11 +50,12 @@
 					let formdata = new FormData();
 					formdata.append("image", file);
 					formdata.append("email", email);
-					formdata.append("password", pass);
+					formdata.append("pass", pass);
 					formdata.append("name", name);
+
 					let xhr = new XMLHttpRequest();
 					xhr.open('POST', 'http://localhost:5000/signup_user', true);
-					xhr.onload = function () {
+					 xhr.onload = function () {
 						if (this.status === 200) {
 							var data = JSON.parse(this.responseText);
 							 if(data['registration'] == true){
