@@ -127,7 +127,7 @@ def signup_post():
 	if flask.request.method == "POST":
 		email = request.form.get('email')
 		name = request.form.get('name')
-		password = request.form.get('password')
+		password = str(request.form['pass'])
 		image = request.form.get('image')
 		user_status = {'registration': False, 'face_present': False, 'duplicate':False}
 		user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
