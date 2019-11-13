@@ -105,16 +105,17 @@ def do_facialrecognition():
 @auth.route('/do_login', methods=['POST'])
 def do_login():
     # this is to ensure the user does not forge a fake login
-    if 'otpCorrect' in session:
-        user = User.query.filter_by(email=session['email']).first()
-        login_user(user, remember=session['rmb'])
-        session.pop('otpCorrect', None)
-        session.pop('email', None)
-        session.pop('rmb', None)
-        return redirect(url_for('main.profile'))
+	if 'otpCorrect' in session:
+		user = User.query.filter_by(email=session['email']).first()
+		login_user(user, remember=session['rmb'])
+		session.pop('otpCorrect', None)
+		session.pop('email', None)
+		session.pop('rmb', None)
+		print("Success")
+		return redirect(url_for('main.index'))
 
-    session.clear()
-    return redirect(url_for('auth.login'))
+	session.clear()
+	return redirect(url_for('auth.login'))
 
 @auth.route('/signup')
 def signup():
