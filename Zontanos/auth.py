@@ -105,16 +105,17 @@ def do_facialrecognition():
 @auth.route('/do_login', methods=['POST'])
 def do_login():
     # this is to ensure the user does not forge a fake login
-    if 'otpCorrect' in session:
-        user = User.query.filter_by(email=session['email']).first()
-        login_user(user, remember=session['rmb'])
-        session.pop('otpCorrect', None)
-        session.pop('email', None)
-        session.pop('rmb', None)
-        return redirect(url_for('main.profile'))
+	if 'otpCorrect' in session:
+		user = User.query.filter_by(email=session['email']).first()
+		login_user(user, remember=session['rmb'])
+		session.pop('otpCorrect', None)
+		session.pop('email', None)
+		session.pop('rmb', None)
+		print("Success")
+		return redirect(url_for('main.profile'))
 
-    session.clear()
-    return redirect(url_for('auth.login'))
+	session.clear()
+	return redirect(url_for('auth.login'))
 
 @auth.route('/signup')
 def signup():
@@ -125,9 +126,9 @@ def signup_post():
 
 	if flask.request.method == "POST":
 		email = request.form.get('email')
-		name = str(request.form['name'])
+		name = request.form.get('name')
 		password = str(request.form['pass'])
-		print(password)
+		image = request.form.get('image')
 		user_status = {'registration': False, 'face_present': False, 'duplicate':False}
 		user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
 		if user: # if a user is found, we want to redirect back to signup page so user can try again
@@ -146,9 +147,6 @@ def signup_post():
 				user_status['face_present'] = False
 			# create new user with the form data. Hash the password so plaintext version isn't saved.
 			new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'), facereco=str(re.sub("\s+", ",", str(facerecoVal[0]))))
-			#Line 123~124 is how we store and compare data
-			#npA = np.asarray(list(map(float, str(re.sub("\s+", ",", str(facerecoVal[0])))[1:-1].split(","))), dtype=np.float32)
-			#print(face_recognition.compare_faces([npA], face_recognition.face_encodings(image)[0], tolerance=0.5))
 			# add the new user to the database
 			db.session.add(new_user)
 			db.session.commit()
