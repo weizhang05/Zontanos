@@ -15,6 +15,7 @@ from flask import request, url_for, Response
 from flask import flash, redirect, render_template, request, session, abort
 import io
 from PIL import Image
+import requests
 auth = Blueprint('auth', __name__)
 
 # hypothetical link for clearing all sessions
@@ -30,20 +31,21 @@ def login():
 
 @auth.route('/login', methods=['POST'])
 def login_post():
-    session['email'] = request.form.get('email')
-    password = request.form.get('password')
-    session['rmb'] = True if request.form.get('remember') else False
+	session['email'] = request.form.get('email')
+	session['faceRec'] = False
+	password = request.form.get('password')
+	session['rmb'] = True if request.form.get('remember') else False
     
-    user = User.query.filter_by(email=session['email']).first()
+	user = User.query.filter_by(email=session['email']).first()
 
     # check if user actually exists
     # take the user supplied password, hash it, and compare it to the hashed password in database
-    if not user or not check_password_hash(user.password, password): 
-        flash('Please check your login details and try again.')
-        return redirect(url_for('auth.login')) # if user doesn't exist or password is wrong, reload the page
+	if not user or not check_password_hash(user.password, password): 
+		flash('Please check your login details and try again.')
+		return redirect(url_for('auth.login')) # if user doesn't exist or password is wrong, reload the page
 
     # proceed to otp authentication once credentials are cleared
-    return redirect(url_for('auth.otp'), code=307)
+	return redirect(url_for('auth.otp'), code=307)
 
 @auth.route('/otp', methods=['POST'])
 def otp():
@@ -56,7 +58,7 @@ def otp():
                 session.pop('otpTrial', None)
                 session.pop('otp', None)
                 session["otpCorrect"] = True
-                return redirect(url_for('auth.do_login'), code=307)
+                return redirect(url_for('auth.facialrecognition'), code=307)
         
         session['otpTrial'] += 1
 
@@ -73,6 +75,36 @@ def otp():
     session['otp'] = sentOtp()
     
     return render_template('otp.html')
+@auth.route('/facialrecognition', methods=['GET','POST'])
+def facialrecognition():
+	if session['faceRec'] == True:
+		print("Testing")
+		return redirect(url_for('auth.do_login'), code=307)
+	else:
+		print("Fail")
+	return render_template('facialrecognition.html')
+	
+@auth.route('/do_facialrecognition', methods=['POST'])
+def do_facialrecognition():
+
+	user_status = {'face_recog': False}
+	if flask.request.method == "POST":
+		user = User.query.filter_by(email=session['email']).first()
+		if flask.request.files.get("image"):
+			image = flask.request.files["image"].read()
+			image = np.array(Image.open(io.BytesIO(image)))
+			facerecoVal = face_recognition.face_encodings(image)[0]
+			npA = np.asarray(list(map(float, str(re.sub("\s+", ",", str(user.facereco)))[1:-1].split(","))), dtype=np.float32)
+			if not face_recognition.compare_faces([npA], face_recognition.face_encodings(image)[0], tolerance=0.5):
+				flash('Face not recognized')
+				user_status['face_recog'] = False
+			else:
+				user_status['face_recog'] = True
+				session['faceRec'] = True
+				print('Set faceRec as True')
+
+				
+	return flask.jsonify(user_status)	
 
 # officially logins the user once credentials and OTP is satisfied
 @auth.route('/do_login', methods=['POST'])
