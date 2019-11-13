@@ -8,13 +8,14 @@ from flask_login import login_user, logout_user, login_required
 from .models import User
 from . import db
 from .otp import sentOtp
+import re
 import time
 import flask
 from flask import request, url_for, Response
 from flask import flash, redirect, render_template, request, session, abort
 import io
 from PIL import Image
-
+import requests
 auth = Blueprint('auth', __name__)
 
 # hypothetical link for clearing all sessions
@@ -28,22 +29,25 @@ def login():
     session.clear()
     return render_template('login.html')
 
-@auth.route('/login_user', methods=['POST'])
-def login_user():
-    session['email'] = request.form.get('email')
-    password = request.form.get('password')
-    session['rmb'] = True if request.form.get('remember') else False
+
+@auth.route('/login', methods=['POST'])
+def login_post():
+	session['email'] = request.form.get('email')
+	session['faceRec'] = False
+	password = request.form.get('password')
+	session['rmb'] = True if request.form.get('remember') else False
+
     
-    user = User.query.filter_by(email=session['email']).first()
+	user = User.query.filter_by(email=session['email']).first()
 
     # check if user actually exists
     # take the user supplied password, hash it, and compare it to the hashed password in database
-    if not user or not check_password_hash(user.password, password): 
-        flash('Please check your login details and try again.')
-        return redirect(url_for('auth.login')) # if user doesn't exist or password is wrong, reload the page
+	if not user or not check_password_hash(user.password, password): 
+		flash('Please check your login details and try again.')
+		return redirect(url_for('auth.login')) # if user doesn't exist or password is wrong, reload the page
 
     # proceed to otp authentication once credentials are cleared
-    return redirect(url_for('auth.otp'), code=307)
+	return redirect(url_for('auth.otp'), code=307)
 
 @auth.route('/otp', methods=['POST'])
 def otp():
@@ -56,7 +60,7 @@ def otp():
                 session.pop('otpTrial', None)
                 session.pop('otp', None)
                 session["otpCorrect"] = True
-                return redirect(url_for('auth.do_login'), code=307)
+                return redirect(url_for('auth.facialrecognition'), code=307)
         
         session['otpTrial'] += 1
 
@@ -74,6 +78,36 @@ def otp():
     session['otp'] = sentOtp(user.email)
     
     return render_template('otp.html')
+@auth.route('/facialrecognition', methods=['GET','POST'])
+def facialrecognition():
+	if session['faceRec'] == True:
+		print("Testing")
+		return redirect(url_for('auth.do_login'), code=307)
+	else:
+		print("Fail")
+	return render_template('facialrecognition.html')
+	
+@auth.route('/do_facialrecognition', methods=['POST'])
+def do_facialrecognition():
+
+	user_status = {'face_recog': False}
+	if flask.request.method == "POST":
+		user = User.query.filter_by(email=session['email']).first()
+		if flask.request.files.get("image"):
+			image = flask.request.files["image"].read()
+			image = np.array(Image.open(io.BytesIO(image)))
+			facerecoVal = face_recognition.face_encodings(image)[0]
+			npA = np.asarray(list(map(float, str(re.sub("\s+", ",", str(user.facereco)))[1:-1].split(","))), dtype=np.float32)
+			if not face_recognition.compare_faces([npA], face_recognition.face_encodings(image)[0], tolerance=0.5):
+				flash('Face not recognized')
+				user_status['face_recog'] = False
+			else:
+				user_status['face_recog'] = True
+				session['faceRec'] = True
+				print('Set faceRec as True')
+
+				
+	return flask.jsonify(user_status)	
 
 # officially logins the user once credentials and OTP is satisfied
 @auth.route('/do_login', methods=['POST'])
@@ -95,66 +129,42 @@ def signup():
     return render_template('signup.html')
 
 @auth.route('/signup_user', methods=['POST'])
-def signup_user():
-	known_face_encoding = [-0.0503066,0.10304856,0.00204806,-0.00389499,-0.03759966,
-							-0.09018462,-0.04985043,-0.11552332,0.10075147,-0.05842667,
-							0.2121045,-0.08577333,-0.213588,-0.14619818,-0.03819468,
-							0.20927802,-0.19131684,-0.10849015,-0.0833607,-0.00487367,
-							0.10962869,0.01902105,0.02119232,0.03458961,-0.0676399,
-							-0.32420766,-0.06685217,-0.1253757,-0.06563466,-0.01856556,
-							-0.02201398,0.04079891,-0.1656629,-0.08953712,0.0432549,
-							0.0409674,-0.0715493,-0.07134749,0.20112692,-0.06966566,
-							-0.20266852,-0.03234909,0.10976552,0.22679658,0.19811808,
-							0.02655001,0.01308998,-0.11290134,0.11300361,-0.15953682,
-							0.02025095,0.14173162,0.09588584,0.10748261,0.05977803,
-							-0.07566036,0.06960371,0.09213795,-0.14075439,-0.03364062,
-							0.0960448,-0.0871863,-0.04299871,-0.08072766,0.25391167,
-							0.03685982,-0.11414248,-0.14813563,0.10489471,-0.14378215,
-							-0.1229203,0.0293023,-0.13665946,-0.19299881,-0.32483345,
-							-0.02783794,0.31240979,0.09899636,-0.20655565,0.06804011,
-							-0.01659909,-0.02284967,0.17932656,0.14099914,0.03632857,
-							0.03354897,-0.10749609,0.00128054,0.2078674,-0.11774533,
-							-0.03962221,0.20906711,-0.02309964,0.02911466,0.02462435,
-							-0.01325976,-0.02004067,0.07890908,-0.13797773,0.0380192,
-							0.10960671,-0.00563727,-0.02076689,0.05862342,-0.06813609,
-							0.06174087,0.01770549,0.08924914,0.01272873,-0.07172906,
-							-0.1612789,-0.06534074,0.12753838,-0.16569392,0.22722113,0.09166601,
-							0.00968798,0.07846366,0.11118621,0.09732923,-0.02296288,
-							-0.06158877,-0.2623125,-0.0223248,0.14919193,0.03540958,0.10420216,0.00212763]
+def signup_post():
 
 	if flask.request.method == "POST":
 		email = request.form.get('email')
 		name = request.form.get('name')
 		password = request.form.get('password')
 		image = request.form.get('image')
-		user_status = {'registration': False, 'face_present': False, 'duplicate':False}
-		
-		user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
 
+		user_status = {'registration': False, 'face_present': False, 'duplicate':False}
+		user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
 		if user: # if a user is found, we want to redirect back to signup page so user can try again
 			flash('Email address already exists')
 			user_status['duplicate'] = True
-			#return redirect(url_for('auth.signup'))
 		else:
 			if flask.request.files.get("image"):
 				# read the image in PIL format
 				image = flask.request.files["image"].read()
 				image = np.array(Image.open(io.BytesIO(image)))
 				#print(face_recognition.face_encodings(image))
-				print(face_recognition.compare_faces(face_recognition.face_encodings(image)[0], [known_face_encoding], tolerance=0.5))
+				#print(face_recognition.compare_faces(face_recognition.face_encodings(image)[0], [known_face_encoding], tolerance=0.5))
+				facerecoVal = face_recognition.face_encodings(image)
 				user_status['face_present'] = True
 			else:
 				user_status['face_present'] = False
 			# create new user with the form data. Hash the password so plaintext version isn't saved.
-			new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'), image=image)
+
+			new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'), facereco=str(re.sub("\s+", ",", str(facerecoVal[0]))))
+			#Line 123~124 is how we store and compare data
+			#npA = np.asarray(list(map(float, str(re.sub("\s+", ",", str(facerecoVal[0])))[1:-1].split(","))), dtype=np.float32)
+			#print(face_recognition.compare_faces([npA], face_recognition.face_encodings(image)[0], tolerance=0.5))
 
 			# add the new user to the database
 			db.session.add(new_user)
 			db.session.commit()
 			user_status['registration'] = True
-			flash('Successful Registration')
-		
-    #return redirect(url_for('auth.login'))
+
 	return flask.jsonify(user_status)
 
 @auth.route('/logout')
