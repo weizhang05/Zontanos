@@ -81,71 +81,81 @@ def login_post():
 
 @auth.route('/otp', methods=['POST'])
 def otp():
-    if 'otpTrial' in session:
-        otp = request.form.get('otp')
-
-        if 'otp' in session:
-            # successful login for correct otp entered
-            if otp == session['otp']:
-                session.pop('otpTrial', None)
-                session.pop('otp', None)
-                session["otpCorrect"] = True
-                return redirect(url_for('auth.facialrecognition'), code=307)
-        
-            session['otpTrial'] += 1
-
-            # returns to login page after 2 wrong tries
-            if session['otpTrial'] == 2:
-                session.clear()
-                return redirect(url_for('auth.login'))
-
-            flash('Wrong OTP, please try again.')
-            return render_template('otp.html')
-
     # for tracking number of wrong OTP entries from user
     session['otpTrial'] = 0
     session['otp'] = sentOtp()
     return render_template('otp.html')
 
+
+@auth.route('/do_otp', methods=['POST'])
+def do_otp():
+    if 'otpTrial' in session:
+        otp = request.form.get('otp')
+
+        # successful login for correct otp entered
+        if otp == session['otp']:
+            session.pop('otpTrial', None)
+            session.pop('otp', None)
+            
+            session["otpCorrect"] = True
+            return redirect(url_for('auth.facialrecognition'), code=307)
+    
+        session['otpTrial'] += 1
+
+        # returns to login page after 2 wrong tries
+        if session['otpTrial'] == 2:
+            session.clear()
+            return redirect(url_for('auth.login'))
+
+        flash('Wrong OTP, please try again.')
+        return render_template('otp.html')
+        
+    return redirect(url_for('auth.login'))    
+
 @auth.route('/facialrecognition', methods=['POST'])
 def facialrecognition():
-    return render_template('facialrecognition.html')
+    if session["otpCorrect"]:
+        session['facialTrial'] = True
+        return render_template('facialrecognition.html')
+
+    return redirect(url_for('auth.login'))
 	
 @auth.route('/do_facialrecognition', methods=['POST'])
 def do_facialrecognition():
-    user_status = {'face_recog': False}
-    if flask.request.method == "POST":
+    if session['facialTrial']:
         user = User.query.filter_by(email=session['email']).first()
+        
         if flask.request.files.get("image"):
             image = flask.request.files["image"].read()
             image = np.array(Image.open(io.BytesIO(image)))
             facerecoVal = face_recognition.face_encodings(image)[0]
             npA = np.asarray(list(map(float, str(re.sub("\s+", ",", str(user.facereco)))[1:-1].split(","))), dtype=np.float32)
             if not face_recognition.compare_faces([facerecoVal], npA, tolerance=0.9):
-                flash('Face not recognized')
-                user_status['face_recog'] = False
+                flash('Face not recognized, please try again.')
+                return render_template('facialrecognition.html')
             else:
-                user_status['face_recog'] = True
+                session.pop('facialTrial', None)
+                
+                session["facialCorrect"] = True
                 return redirect(url_for('auth.do_login'), code=307)
-                            
-    return flask.jsonify(user_status)	
+
+    return redirect(url_for('auth.login'))	
 
 # officially logins the user once credentials and OTP is satisfied
 @auth.route('/do_login', methods=['POST'])
 def do_login():
     # this is to ensure the user does not forge a fake login
-    if 'otpCorrect' in session:
+    if 'otpCorrect' in session and 'facialCorrect' in session:
         user = User.query.filter_by(email=session['email']).first()
         login_user(user, remember=session['rmb'])
         session.pop('otpCorrect', None)
+        session.pop('facialCorrect', None)
         session.pop('email', None)
         session.pop('rmb', None)
         return redirect(url_for('main.profile'))
     
     session.clear()
     return redirect(url_for('auth.login'))
-
-
 
 @auth.route('/logout')
 @login_required
