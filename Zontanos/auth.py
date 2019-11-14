@@ -123,22 +123,28 @@ def facialrecognition():
 @auth.route('/do_facialrecognition', methods=['POST'])
 def do_facialrecognition():
     if session['facialTrial']:
+        print('safe1')
         user = User.query.filter_by(email=session['email']).first()
         
         if flask.request.files.get("image"):
+            print('safe2')
             image = flask.request.files["image"].read()
+            image = base64.b64decode(image)
             image = np.array(Image.open(io.BytesIO(image)))
             facerecoVal = face_recognition.face_encodings(image)[0]
             npA = np.asarray(list(map(float, str(re.sub("\s+", ",", str(user.facereco)))[1:-1].split(","))), dtype=np.float32)
             if not face_recognition.compare_faces([facerecoVal], npA, tolerance=0.9):
+                print('hmm')
                 flash('Face not recognized, please try again.')
                 return render_template('facialrecognition.html')
             else:
-                session.pop('facialTrial', None)
-                
+                #session.pop('facialTrial', None)
+                print('huat ah')
                 session["facialCorrect"] = True
+                print('login looo')
                 return redirect(url_for('auth.do_login'), code=307)
 
+    print('why')
     return redirect(url_for('auth.login'))	
 
 # officially logins the user once credentials and OTP is satisfied
@@ -153,7 +159,8 @@ def do_login():
         session.pop('email', None)
         session.pop('rmb', None)
         return redirect(url_for('main.profile'))
-    
+
+    print('gg')
     session.clear()
     return redirect(url_for('auth.login'))
 
