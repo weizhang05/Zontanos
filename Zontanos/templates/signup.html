@@ -7,100 +7,98 @@
             {{ messages[0] }}. Go to <a href="{{ url_for('auth.login') }}">login page</a>.
         </div>
         {% endif %} {% endwith %}
-        <form>
+        <form method="post" action="signup_user">
             <div class="field">
                 <div class="control">
-                    <input class="input is-large" type="email" id="email1" name="email" placeholder="Email" autofocus="">
+                    <input class="input is-large" type="email" id="email" name="email" placeholder="Email" autofocus="">
                 </div>
             </div>
 
             <div class="field">
                 <div class="control">
-                    <input class="input is-large" type="text" id="name1" name="name" placeholder="Name" autofocus="">
+                    <input class="input is-large" type="text" id="name" name="name" placeholder="Name" autofocus="">
                 </div>
             </div>
 
             <div class="field">
                 <div class="control">
-                    <input class="input is-large" type="password" id="password1" name="password" placeholder="Password">
+                    <input class="input is-large" type="password" id="password" name="password" placeholder="Password">
                 </div>
             </div>
-		</form>
+		
 			<div class="field">
 				<div id ="face-input">
-                    <video id="myVideo"  autoplay></video>
+                    <video id="video" autoplay></video>
+					<canvas style="display: none;" id="canvas" name="image"></canvas>
+					<input class="input is-large" type="hidden" id="image" name="image" value="" autofocus=""> 
                 </div>
 			</div>
-            <button id="button" class="button is-block is-info is-large is-fullwidth">Sign Up</button>
+		
+			<button id="snap" class="button is-block is-info is-large is-fullwidth">Snap</button>
+            <button type="submit" id="button" class="button is-block is-info is-large is-fullwidth">Sign Up</button>
+		</form>	
 
 			<script>
-				let v = document.getElementById("myVideo");
-				let b = document.getElementById("button");
-				//create a canvas to grab an image for upload
-				let imageCanvas = document.createElement('canvas');
-				let imageCtx = imageCanvas.getContext("2d");
-		
+				// |streaming| indicates whether or not we're currently streaming
+				// video from the camera. Obviously, we start at false.
+				var streaming = false;
+				var width =  200;
+				var height = null;
 				
-				function postFile(file) {
-					// get form data
-					email = document.getElementById("email1").value
-					pass = document.getElementById("password1").value
-					name = document.getElementById("name1").value
+				var video = document.getElementById('video');
+				var canvas = document.getElementById('canvas');
+				var image = document.getElementById('image');
+				var snap = document.getElementById('snap');				
+				
+				function startup() {
+					navigator.mediaDevices.getUserMedia({video: true, audio: false})
+					.then(function(stream) {
+					  video.srcObject = stream;
+					  video.play();
+					})
+					.catch(function(err) {
+					  console.log("An error occurred: " + err);
+					});
 
-					let formdata = new FormData();
-					formdata.append("image", file);
-					formdata.append("email", email);
-					formdata.append("pass", pass);
-					formdata.append("name", name);
-
-					let xhr = new XMLHttpRequest();
-					xhr.open('POST', 'http://localhost:5000/signup_user', true);
-					 xhr.onload = function () {
-						if (this.status === 200) {
-							var data = JSON.parse(this.responseText);
-							 if(data['registration'] == true){
-								alert('Successful Registration!');
-								window.location.href = "{{ url_for('auth.login')}}";
-							}else if(data['duplicate'] == true){
-								window.location.href = "{{ url_for('auth.signup')}}";
-							}
+					video.addEventListener('canplay', function(ev){
+					  if (!streaming) {
+						height = video.videoHeight / (video.videoWidth/width);
+					  
+						// Firefox currently has a bug where the height can't be read from
+						// the video, so we will make assumptions if this happens.
+						if (isNaN(height)) {
+						  height = width / (4/3);
 						}
-					};
-
-					xhr.send(formdata);
-				}
-				function sendImagefromCanvas() {
-				//Make sure the canvas is set to the current video size
-				imageCanvas.width = v.videoWidth;
-				imageCanvas.height = v.videoHeight;
-
-				imageCtx.drawImage(v, 0, 0, v.videoWidth, v.videoHeight);
-
-				//Convert the canvas to blob and post the file
-				imageCanvas.toBlob(postFile, 'image/jpeg');
-				}	
-				
-				 window.onload = function () {
-					//Get camera video
-					navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: false })
-						.then(stream => {
-							v.srcObject = stream;
-						})
-						.catch(err => {
-							console.log('navigator.getUserMedia error: ', err)
-						});
-				};
-				 //Take a picture on click
-				v.onclick = function () {
-					console.log('click');
-					sendImagefromCanvas();
-				};
-				//Take a picture on click
-				b.onclick = function () {
-					console.log('click');
-					sendImagefromCanvas();
-				};
-
+					  
+						video.setAttribute('width', width);
+						video.setAttribute('height', height);
+						canvas.setAttribute('width', width);
+						canvas.setAttribute('height', height);
+						streaming = true;
+					  }
+					}, false);
+					
+					snap.addEventListener('click', function(ev){
+					  takepicture();
+					  ev.preventDefault();
+					}, false);
+				  }
+				  
+				  function takepicture() {
+					var context = canvas.getContext('2d');
+					if (width && height) {
+					  canvas.width = width;
+					  canvas.height = height;
+					  context.drawImage(video, 0, 0, width, height);
+					
+					  var data = canvas.toDataURL('image/png');
+					  image.setAttribute('value', canvas.toDataURL());
+					}
+				  }
+				  
+				  // Set up our event listener to run the startup process
+				  // once loading is complete.
+				  window.addEventListener('load', startup, false);
 			</script>
  
     </div>

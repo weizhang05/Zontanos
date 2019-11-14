@@ -1,6 +1,7 @@
 # flask based dependencies
 from flask import Blueprint, render_template, redirect, session, url_for, request, flash, escape, Response, Flask, abort
 from flask_login import login_user, logout_user, login_required
+import flask
 # functions from local files
 from .models import User
 from . import db
@@ -10,11 +11,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from PIL import Image
 import cv2, face_recognition
 import numpy as np
-import re, time, io, requests
+import re, time, io, requests, base64
 
 auth = Blueprint('auth', __name__)
 
-# hypothetical link for clearing all sessions
+# hypothetical link for clearing all sessions (USE WHEN STUCK!)
 @auth.route('/clear')
 def clear():
     session.clear()
@@ -26,35 +27,38 @@ def signup():
 
 @auth.route('/signup_user', methods=['POST'])
 def signup_post():
-    if flask.request.method == "POST":
-        email = request.form.get('email')
-        name = request.form.get('name')
-        password = str(request.form['pass'])
-        image = request.form.get('image')
-        user_status = {'registration': False, 'face_present': False, 'duplicate':False}
-        user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
-        if user: # if a user is found, we want to redirect back to signup page so user can try again
-            flash('Email address already exists')
-            user_status['duplicate'] = True
+    email = request.form.get('email')
+    name = request.form.get('name')
+    password = request.form.get('password')
+    image = request.form.get('image')
+    
+    user_status = {'registration': False, 'face_present': False, 'duplicate':False}
+    user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
+    
+    if user: # if a user is found, we want to redirect back to signup page so user can try again
+        flash('Email address already exists')
+        return redirect(url_for('auth.signup'))
+    else:
+        if flask.request.files.get("image"):
+            # read the image in PIL format
+            image = base64.b64decode(image)
+            image = np.array(Image.open(io.BytesIO(image)))
+            #print(face_recognition.face_encodings(image))
+            #print(face_recognition.compare_faces(face_recognition.face_encodings(image)[0], [known_face_encoding], tolerance=0.5))
+            facerecoVal = face_recognition.face_encodings(image)
+            user_status['face_present'] = True
+            facial = str(re.sub("\s+", ",", str(facerecoVal[0])))
         else:
-            if flask.request.files.get("image"):
-                # read the image in PIL format
-                image = flask.request.files["image"].read()
-                image = np.array(Image.open(io.BytesIO(image)))
-                #print(face_recognition.face_encodings(image))
-                #print(face_recognition.compare_faces(face_recognition.face_encodings(image)[0], [known_face_encoding], tolerance=0.5))
-                facerecoVal = face_recognition.face_encodings(image)
-                user_status['face_present'] = True
-            else:
-                user_status['face_present'] = False
+            facial = None
                 
-            # create new user with the form data. Hash the password so plaintext version isn't saved.
-            new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'), facereco=str(re.sub("\s+", ",", str(facerecoVal[0]))))
-            # add the new user to the database
-            db.session.add(new_user)
-            db.session.commit()
-            user_status['registration'] = True
-
+        # create new user with the form data. Hash the password so plaintext version isn't saved.
+        new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'), facereco=facial)
+        
+        # add the new user to the database
+        db.session.add(new_user)
+        db.session.commit()
+        user_status['registration'] = True
+        
     return flask.jsonify(user_status)
 
 @auth.route('/login')
