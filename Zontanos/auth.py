@@ -32,7 +32,6 @@ def signup_post():
     password = request.form.get('password')
     image = request.form.get('image')
     
-    user_status = {'registration': False, 'face_present': False, 'duplicate':False}
     user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
     
     if user: # if a user is found, we want to redirect back to signup page so user can try again
@@ -46,7 +45,6 @@ def signup_post():
             #print(face_recognition.face_encodings(image))
             #print(face_recognition.compare_faces(face_recognition.face_encodings(image)[0], [known_face_encoding], tolerance=0.5))
             facerecoVal = face_recognition.face_encodings(image)
-            user_status['face_present'] = True
             facial = str(re.sub("\s+", ",", str(facerecoVal[0])))
         else:
             facial = None
@@ -57,19 +55,16 @@ def signup_post():
         # add the new user to the database
         db.session.add(new_user)
         db.session.commit()
-        user_status['registration'] = True
         
-    return flask.jsonify(user_status)
+    return redirect(url_for('auth.login'))
 
 @auth.route('/login')
 def login():
-    session.clear()
     return render_template('login.html')
 
 @auth.route('/login', methods=['POST'])
 def login_post():
     session['email'] = request.form.get('email')
-    session['faceRec'] = False
     password = request.form.get('password')
     session['rmb'] = True if request.form.get('remember') else False
 
@@ -77,7 +72,7 @@ def login_post():
 
     # check if user actually exists
     # take the user supplied password, hash it, and compare it to the hashed password in database
-    if not user or not check_password_hash(user.password, password): 
+    if not user or not check_password_hash(user.password, password):
         flash('Please check your login details and try again.')
         return redirect(url_for('auth.login')) # if user doesn't exist or password is wrong, reload the page
 
@@ -131,7 +126,6 @@ def do_facialrecognition():
                 user_status['face_recog'] = False
             else:
                 user_status['face_recog'] = True
-                session['faceRec'] = True
                 return redirect(url_for('auth.do_login'), code=307)
                             
     return flask.jsonify(user_status)	
