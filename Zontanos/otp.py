@@ -24,7 +24,7 @@ def sentOtp():
     password = '1q2w#E$R'
 
     # Receiver will be the login email
-    receiver = 'cs3235otp@gmail.com'
+    receiver = ''
 
     server.login(sender,password)
     msg = "\n" + otp
