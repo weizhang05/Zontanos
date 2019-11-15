@@ -42,8 +42,6 @@ def signup_post():
             # read the image in PIL format
             image = base64.b64decode(image)
             image = np.array(Image.open(io.BytesIO(image)))
-            #print(face_recognition.face_encodings(image))
-            #print(face_recognition.compare_faces(face_recognition.face_encodings(image)[0], [known_face_encoding], tolerance=0.5))
             facerecoVal = face_recognition.face_encodings(image)
             facial = str(re.sub("\s+", ",", str(facerecoVal[0])))
         else:
